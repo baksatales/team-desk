@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#7A1218">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📒</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BT × CI Team Desk</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ===== PASTE YOUR FIREBASE CONFIG HERE (Firebase console > Project settings > Your apps > Web app) ===== */
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDBXGw5Wt9KjZ9VG1qhvykZq1_zXbEkDUw",
+  authDomain: "team-desk-40b1f.firebaseapp.com",
+  projectId: "team-desk-40b1f",
+  appId: "1:483341365163:web:559e24ad7d8004cefa2cee"
+};
+/* ======================================================================================================= */
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F4F7; --paper:#FFFFFF; --ruling:#E4E9F0; --line:#D3DAE4;
+  --ink:#1E2640; --ink-2:#56607C; --ink-3:#8A93AA;
+  --bahi:#7A1218; --bahi-ink:#FFF4F0; --bahi-soft:#F7E6E5;
+  --marigold:#D98A06; --marigold-soft:#FBEFD6; --leaf:#2F6B45; --leaf-soft:#E2F0E6;
+  --warn:#A1311B;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10131B; --paper:#181C27; --ruling:#232938; --line:#2E3546;
+    --ink:#E8EBF3; --ink-2:#AAB2C7; --ink-3:#7A8299;
+    --bahi:#5C0E13; --bahi-ink:#FFECE8; --bahi-soft:#3A1A1C;
+    --marigold:#F0A93A; --marigold-soft:#3A2E17; --leaf:#5FB07D; --leaf-soft:#1C3125; --warn:#F07D63;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10131B; --paper:#181C27; --ruling:#232938; --line:#2E3546;
+  --ink:#E8EBF3; --ink-2:#AAB2C7; --ink-3:#7A8299;
+  --bahi:#5C0E13; --bahi-ink:#FFECE8; --bahi-soft:#3A1A1C;
+  --marigold:#F0A93A; --marigold-soft:#3A2E17; --leaf:#5FB07D; --leaf-soft:#1C3125; --warn:#F07D63;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--marigold);outline-offset:2px}
+
+/* Cover: the red ledger binding */
+.cover{background:var(--bahi);color:var(--bahi-ink);padding:18px 20px 0;position:relative}
+.cover::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 2px,transparent 2px 9px)}
+.cover-top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;max-width:1180px;margin:0 auto}
+.brand{font-family:var(--display);font-weight:700;font-size:1.35rem;letter-spacing:-.01em;margin:0}
+.brand small{display:block;font:400 .82rem/1.3 var(--body);opacity:.8;letter-spacing:0}
+.me{display:flex;gap:8px;align-items:center;font-size:.9rem}
+.me select{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);color:var(--bahi-ink);border-radius:8px;padding:6px 10px}
+.me select option{color:#1E2640}
+.signout{background:none;border:1px solid rgba(255,255,255,.35);color:var(--bahi-ink);border-radius:8px;padding:6px 10px;cursor:pointer}
+.gate{max-width:460px;margin:40px auto;text-align:center}.gate .btn{font-size:1.05rem;padding:10px 18px}
+.tabs{display:flex;gap:4px;max-width:1180px;margin:16px auto 0;overflow-x:auto;padding-bottom:6px}
+.tab{background:none;border:0;color:var(--bahi-ink);opacity:.75;padding:10px 14px 12px;border-radius:10px 10px 0 0;cursor:pointer;font-weight:700;white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--bg);color:var(--ink);opacity:1}
+
+main{max-width:1180px;margin:0 auto;padding:20px 20px 60px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.period{display:flex;align-items:center;gap:6px}
+.period h2{font-family:var(--display);font-size:1.6rem;margin:0 8px;letter-spacing:-.015em}
+.iconbtn,.btn{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:7px 12px;cursor:pointer}
+.iconbtn{padding:7px 11px}
+.btn.primary{background:var(--bahi);border-color:var(--bahi);color:var(--bahi-ink);font-weight:700}
+.btn.ghost{background:none;border-color:transparent;color:var(--ink-2)}
+.btn.small{padding:4px 9px;font-size:.85rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:.92rem}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+.sheet{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.sheet h3{font-family:var(--display);font-size:1.15rem;margin:0 0 4px}
+.muted{color:var(--ink-2)}
+.tiny{font-size:.83rem;color:var(--ink-3)}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+
+/* Budget strip: the week as an hours ledger */
+.budget{margin:12px 0 4px}
+.budget-track{position:relative;height:18px;border-radius:5px;background:repeating-linear-gradient(90deg,var(--ruling) 0 1px,transparent 1px 100%);background-size:calc(100%/var(--cols,32)) 100%;border:1px solid var(--line);overflow:hidden;display:flex}
+.budget-track span{height:100%}
+.budget-mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.budget-legend{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px;font-size:.88rem;margin-top:6px}
+.over{color:var(--warn);font-weight:700}
+
+/* Ledger list */
+.ledger{list-style:none;margin:0;padding:0}
+.ledger li{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:8px 2px;border-bottom:1px solid var(--ruling)}
+.ledger li:last-child{border-bottom:0}
+.ledger li.compact{grid-template-columns:24px 1fr auto}
+.ledger .t{cursor:pointer;min-width:0}
+.ledger .t b{font-weight:400}
+.ledger .meta{font-size:.82rem;color:var(--ink-3);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:baseline}
+.ledger .done .t b{text-decoration:line-through;color:var(--ink-3)}
+.ledger .gone{opacity:.55}
+.ctrls{display:flex;gap:4px;align-items:center}
+.ctrls select{border:1px solid var(--line);background:var(--paper);border-radius:6px;padding:3px 4px;font-size:.82rem;max-width:118px}
+.star{border:0;background:none;cursor:pointer;font-size:1.1rem;color:var(--ink-3);padding:2px 6px;line-height:1}
+.star[aria-pressed="true"]{color:var(--marigold)}
+.star.del{font-size:1.25rem}.star.del:hover{color:var(--warn)}
+.toast-act{margin-left:12px;background:none;border:1px solid currentColor;color:inherit;border-radius:6px;padding:2px 10px;cursor:pointer;font-weight:700}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--leaf)}
+.focus{background:var(--marigold-soft);border:1px solid color-mix(in srgb,var(--marigold) 40%,transparent);border-radius:10px;padding:10px 14px;margin:14px 0}
+.focus h4,.group h4{margin:6px 0 2px;font-family:var(--display);font-size:1rem}
+.group{margin-top:14px}
+.group h4{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:2px solid var(--ink);padding-bottom:4px}
+.group h4 span{font:400 .85rem var(--body);color:var(--ink-2)}
+.add{display:grid;grid-template-columns:1fr 150px 70px 90px auto;gap:6px;margin-top:12px}
+.add input,.add select{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:7px 9px;min-width:0}
+.banner{border-radius:10px;padding:10px 14px;margin-bottom:14px;border:1px solid var(--line);background:var(--paper)}
+.banner.warn{border-color:var(--warn);background:var(--bahi-soft)}
+.people-cards .sheet{margin:0}
+.person-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.person-head h3 button{all:unset;cursor:pointer;font-family:var(--display);font-weight:700;font-size:1.15rem}
+.person-head h3 button:focus-visible{outline:3px solid var(--marigold)}
+
+/* Goals */
+.goal{padding:12px 0;border-bottom:1px solid var(--ruling)}
+.goal:last-child{border-bottom:0}
+.goal-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.goal-title{cursor:pointer;font-weight:700}
+.pbar{height:8px;border-radius:4px;background:var(--ruling);overflow:hidden;margin:8px 0 4px}
+.pbar i{display:block;height:100%;background:var(--leaf)}
+.status{font-size:.78rem;border-radius:999px;padding:2px 9px;white-space:nowrap;border:1px solid var(--line)}
+.status.on{background:var(--leaf-soft);color:var(--leaf);border-color:transparent}
+.status.risk{background:var(--bahi-soft);color:var(--warn);border-color:transparent}
+.status.done{background:var(--ink);color:var(--paper);border-color:transparent}
+.cur{width:80px;border:1px solid var(--line);border-radius:6px;padding:2px 6px;background:var(--paper)}
+.months{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin:6px 0 16px}
+.months button{border:1px solid var(--line);background:var(--paper);border-radius:6px;padding:6px 0;cursor:pointer;font-size:.8rem;line-height:1.2}
+.months button[aria-current="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.months button small{display:block;color:var(--ink-3);font-size:.7rem}
+.months button[aria-current="true"] small{color:inherit;opacity:.75}
+.mchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.mchip{font-size:.8rem;border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:pointer;background:var(--paper)}
+
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.scroll{overflow-x:auto}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--ruling);vertical-align:top}
+th{font-weight:700;color:var(--ink-2);font-size:.85rem}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+
+textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--paper);min-height:64px}
+.rules li{margin:4px 0}
+
+dialog{border:0;border-radius:14px;padding:0;width:min(560px,94vw);background:var(--paper);color:var(--ink);box-shadow:0 20px 60px rgba(10,15,30,.35)}
+dialog::backdrop{background:rgba(16,19,27,.5)}
+dialog form{padding:20px}
+dialog h3{font-family:var(--display);margin:0 0 12px}
+.field{display:grid;gap:4px;margin-bottom:10px}
+.field label{font-size:.85rem;color:var(--ink-2);font-weight:700}
+.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--paper);width:100%}
+.field.check{grid-template-columns:auto 1fr;align-items:center}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dlg-actions{display:flex;justify-content:space-between;gap:8px;margin-top:14px}
+.empty{text-align:center;padding:30px 10px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;font-size:.92rem;z-index:20;max-width:90vw}
+@media (max-width:640px){
+  .add{grid-template-columns:1fr 1fr}
+  .add input:first-child{grid-column:1/-1}
+  .ledger li{grid-template-columns:24px 1fr}
+  .ledger .ctrls{grid-column:2}
+  .months{grid-template-columns:repeat(6,1fr)}
+  .period h2{font-size:1.3rem}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="cover">
+  <div class="cover-top">
+    <h1 class="brand">Team Desk <small>Baksa Tales × Conscious India · year → month → week</small></h1>
+    <div class="me"><label>I am <select id="me" aria-label="Who is using this"></select></label><button id="signout" class="signout" hidden>Sign out</button></div>
+  </div>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+</header>
+<main id="view" aria-live="polite" data-build="web-1"><p class="muted">Opening the desk…</p></main>
+<dialog id="dlg"></dialog>
+
+<script>
+(function(){
+const STATUSES=[["todo","To do"],["doing","Doing"],["waiting","Waiting on someone"],["done","Done"],["next","Next week"],["dropped","Dropped"]];
+const ACTIVE=new Set(["todo","doing","waiting","done"]);
+const GOAL_ST=[["on","On track"],["risk","At risk"],["done","Done"],["parked","Parked"]];
+const DAYS=["","Mon","Tue","Wed","Thu","Fri","Sat"];
+const GROUPS=["Conscious India","Baksa Tales","Other work","Life & growth"];
+const TABS=[["week","This week"],["month","Month"],["year","Year 1"],["team","Team & engines"],["review","Friday review"]];
+
+const S={people:{},projects:{},goals:{},tasks:{},reviews:{},settings:{}};
+let db=null, fs=null, authUser=null, authReady=false, setupNeeded=false, denied=false, subs=[], readOnly=false, ready=false, taskUnsub=null, taskWin="";
+
+// ---------- local prefs ----------
+const store={get(k,d){try{const v=localStorage.getItem("desk:"+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("desk:"+k,JSON.stringify(v))}catch(e){}}};
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse=s=>{const[y,m,d]=String(s).split("-").map(Number);return new Date(y,(m||1)-1,d||1)};
+const monday=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-((x.getDay()+6)%7));return x};
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return iso(d)};
+const weekMonth=w=>addDays(w,3).slice(0,7);
+const addMonths=(m,n)=>{const d=parse(m+"-01");d.setMonth(d.getMonth()+n);return iso(d).slice(0,7)};
+const fmtDay=s=>parse(s).toLocaleDateString("en-IN",{day:"numeric",month:"short"});
+const fmtMonth=m=>parse(m+"-01").toLocaleDateString("en-IN",{month:"long",year:"numeric"});
+const fmtMon=m=>parse(m+"-01").toLocaleDateString("en-IN",{month:"short"});
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0};
+const hrs=n=>(Math.round(n*100)/100).toString().replace(/\.0+$/,"")+"h";
+const clean=o=>{const r={};for(const[k,v]of Object.entries(o)){if(k!=="id"&&v!==undefined)r[k]=v}return r};
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+const startWeek=(()=>{const n=new Date(),w=iso(monday(n));return n.getDay()===0||n.getDay()===6?addDays(w,7):w})();
+const ui={tab:store.get("tab","week"),week:startWeek,month:store.get("month",null),who:store.get("who","all"),groupBy:store.get("groupBy","day"),me:store.get("me","")};
+ui.month=weekMonth(ui.week);
+
+function h(tag,attrs,...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs||{})){if(v==null||v===false)continue;if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else if(k==="class")e.className=v;else if(k==="style")e.style.cssText=v;else if(k==="value"||k==="checked"||k==="selected")e[k]=v;else e.setAttribute(k,v===true?"":v)}for(const c of kids.flat(9)){if(c==null||c===false)continue;e.append(c.nodeType?c:document.createTextNode(String(c)))}return e}
+function toast(msg,action){document.querySelectorAll(".toast").forEach(x=>x.remove());const t=h("div",{class:"toast",role:"status"},msg,action?h("button",{class:"toast-act",onclick:()=>{t.remove();action.fn()}},action.label):null);document.body.append(t);setTimeout(()=>t.remove(),action?6000:3200)}
+
+// ---------- sorted accessors ----------
+const people=()=>Object.values(S.people).sort((a,b)=>(a.order??99)-(b.order??99)||a.name.localeCompare(b.name));
+const projects=()=>Object.values(S.projects).sort((a,b)=>GROUPS.indexOf(a.group)-GROUPS.indexOf(b.group)||(a.order??99)-(b.order??99));
+const pName=id=>S.people[id]?.name||"Unassigned";
+const proj=id=>S.projects[id]||{name:"No project",color:"#8A93AA",group:"Other work"};
+const settings=()=>({yearStart:"2026-10",yearLabel:"Year 1",...S.settings});
+const tasksFor=(pid,week)=>Object.values(S.tasks).filter(t=>t.week===week&&(!pid||t.owner===pid));
+const isProt=t=>!!(S.projects[t.project]||{}).protected;
+const planned=list=>list.filter(t=>ACTIVE.has(t.status)&&!isProt(t)).reduce((s,t)=>s+num(t.hours),0);
+function capacity(p){const c=num(p.capacity||0),b=num(p.buffer??15);return{total:c,avail:c*(1-b/100),buffer:b}}
+
+// ---------- writes ----------
+async function save(col,id,data,merge){
+  if(!db||readOnly){toast("Changes can't be saved in this view.");return false}
+  try{const ref=db.collection(col).doc(id);merge?await ref.update(data):await ref.set(data);return true}
+  catch(e){
+    if(e&&e.code==="unavailable"){await new Promise(r=>setTimeout(r,600+Math.random()*600));try{const ref=db.collection(col).doc(id);merge?await ref.update(data):await ref.set(data);return true}catch(e2){}}
+    if(e&&e.code==="permission-denied"){denied=true;render();toast("Your email isn't on the team list yet. Ask Preeti to add it.");}
+    else if(e&&e.code==="resource-exhausted")toast("Today's free database limit is used up. It resets tomorrow.");
+    else toast("Couldn't save. Check your connection and try again.");
+    return false}
+}
+async function remove(col,id){if(!db||readOnly)return;try{await db.collection(col).doc(id).delete()}catch(e){toast("Couldn't delete. Try again.")}}
+
+// ---------- data subscription ----------
+let raf=0;function render(){cancelAnimationFrame(raf);raf=requestAnimationFrame(draw)}
+let jumped=false;
+function intoMap(key){return snap=>{const m={};snap.docs.forEach(d=>m[d.id]={id:d.id,...d.data()});S[key]=m;ready=true;
+  if(key==="tasks"&&!jumped&&!snap.metadata?.fromCache){jumped=true;
+    if(!Object.values(m).some(t=>t.week===ui.week)){for(let i=1;i<=3;i++){const w=addDays(ui.week,7*i);if(Object.values(m).some(t=>t.week===w)){ui.week=w;ui.month=weekMonth(w);toast("This week is empty, so the desk opened the week of "+fmtDay(w)+".");break}}}}
+  render()}}
+function anchor(){return ui.tab==="month"||ui.tab==="year"?ui.month+"-01":ui.week}
+function syncTaskWindow(){
+  if(!db)return;const a=iso(monday(parse(anchor())));
+  const from=addDays(a,-42),to=addDays(a,49),key=from+to;
+  if(key===taskWin)return;
+  if(taskWin&&ui._from&&a>=addDays(ui._from,14)&&a<=addDays(ui._to,-14))return;
+  taskWin=key;ui._from=from;ui._to=to;if(taskUnsub)taskUnsub();
+  taskUnsub=fs.collection("tasks").where("week",">=",from).where("week","<=",to).onSnapshot(intoMap("tasks"),onErr);
+}
+function onErr(e){if(e&&e.code==="permission-denied"){denied=true;ready=true;render()}}
+
+function stopSubs(){subs.forEach(u=>{try{u()}catch(e){}});subs=[];if(taskUnsub){taskUnsub();taskUnsub=null}taskWin=""}
+function startSubs(){
+  stopSubs();db=fs;denied=false;
+  subs.push(fs.collection("people").onSnapshot(intoMap("people"),onErr));
+  subs.push(fs.collection("projects").onSnapshot(intoMap("projects"),onErr));
+  subs.push(fs.collection("goals").onSnapshot(intoMap("goals"),onErr));
+  subs.push(fs.collection("reviews").where("week",">=",addDays(ui.week,-120)).onSnapshot(intoMap("reviews"),onErr));
+  subs.push(fs.doc("meta/settings").onSnapshot(s=>{S.settings=s.exists?s.data():{};render()},onErr));
+  syncTaskWindow();
+}
+async function signIn(){
+  const provider=new firebase.auth.GoogleAuthProvider();provider.setCustomParameters({prompt:"select_account"});
+  try{await firebase.auth().signInWithPopup(provider)}
+  catch(e){if(e&&(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment"||e.code==="auth/cancelled-popup-request"))return firebase.auth().signInWithRedirect(provider);
+    if(e&&e.code==="auth/unauthorized-domain")toast("This web address isn't allowed yet. Add it under Firebase > Authentication > Settings > Authorized domains.");
+    else if(e&&e.code!=="auth/popup-closed-by-user")toast("Sign-in didn't work: "+(e.message||e.code));}
+}
+async function importStarter(){
+  try{
+    const res=await fetch("starter-plan.json",{cache:"no-store"});if(!res.ok)throw new Error("starter-plan.json not found next to index.html");
+    const data=await res.json();const ops=[];
+    for(const[col,docs]of Object.entries(data))for(const[id,d]of Object.entries(docs))ops.push([col,id,d]);
+    for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(([c,id,d])=>b.set(fs.collection(c).doc(id),d));await b.commit()}
+    jumped=false;taskWin="";syncTaskWindow();toast("Imported "+ops.length+" items. The plan is ready.");
+  }catch(e){toast(e.code==="permission-denied"?"Your email isn't on the team list in the security rules.":"Import failed: "+(e.message||e))}
+}
+async function boot(){
+  drawChrome();
+  const cfg=window.FIREBASE_CONFIG||{};
+  if(!window.firebase||!cfg.apiKey||cfg.apiKey.startsWith("PASTE")){setupNeeded=true;authReady=true;ready=true;render();return}
+  firebase.initializeApp(cfg);fs=firebase.firestore();
+  try{await fs.enablePersistence({synchronizeTabs:true})}catch(e){}
+  try{await firebase.auth().getRedirectResult()}catch(e){}
+  firebase.auth().onAuthStateChanged(u=>{
+    authUser=u;authReady=true;
+    const so=document.getElementById("signout");so.hidden=!u;so.onclick=()=>firebase.auth().signOut();
+    if(!u){stopSubs();db=null;S.people={};S.tasks={};ready=true;render();return}
+    ready=false;render();startSubs();
+  });
+  render();
+}
+
+// ---------- chrome ----------
+function drawChrome(){
+  const tabs=document.getElementById("tabs");tabs.replaceChildren(...TABS.map(([k,l])=>h("button",{class:"tab",role:"tab","aria-selected":String(ui.tab===k),onclick:()=>{ui.tab=k;store.set("tab",k);drawChrome();syncTaskWindow();render()}},l)));
+  const sel=document.getElementById("me");
+  sel.replaceChildren(h("option",{value:""},"Choose…"),...people().map(p=>h("option",{value:p.id,selected:p.id===ui.me},p.name)));
+  sel.onchange=()=>{ui.me=sel.value;store.set("me",ui.me);if(ui.me){ui.who=ui.me;store.set("who",ui.me)}render()};
+}
+let lastPeopleKey="";
+function autoMe(){if(ui.me||!authUser)return;const e=(authUser.email||"").toLowerCase();const p=Object.values(S.people).find(x=>(x.email||"").toLowerCase()===e);if(p){ui.me=p.id;store.set("me",p.id);if(ui.who==="all"){}drawChrome()}}
+function draw(){autoMe();
+  const key=people().map(p=>p.id+p.name).join();if(key!==lastPeopleKey){lastPeopleKey=key;drawChrome()}
+  const v=document.getElementById("view");
+  const out=[];
+  if(setupNeeded){v.replaceChildren(h("div",{class:"sheet gate"},h("h3",{},"One setup step left"),h("p",{class:"muted"},"Paste your Firebase settings into index.html where it says PASTE YOUR FIREBASE CONFIG HERE, then upload the file again. The setup guide walks you through it.")));return}
+  if(!authReady){v.replaceChildren(h("p",{class:"muted"},"Opening the desk…"));return}
+  if(!authUser){v.replaceChildren(h("div",{class:"sheet gate"},h("h3",{},"Team Desk"),h("p",{class:"muted"},"Sign in once with your Google account. This device remembers you after that."),h("button",{class:"btn primary",onclick:signIn},"Sign in with Google")));return}
+  if(denied){v.replaceChildren(h("div",{class:"sheet gate"},h("h3",{},"Not on the team list yet"),h("p",{class:"muted"},authUser.email+" isn't allowed to open this desk. Ask Preeti to add this email to the security rules, or sign in with a different account."),h("button",{class:"btn",onclick:()=>firebase.auth().signOut()},"Use a different account")));return}
+  if(ready&&!Object.keys(S.people).length&&!Object.keys(S.projects).length){out.push(h("div",{class:"sheet gate"},h("h3",{},"The desk is empty"),h("p",{class:"muted"},"Load the October plan (team, engines, goals and four weeks of tasks). Do this once."),h("button",{class:"btn primary",onclick:importStarter},"Load the starter plan")));v.replaceChildren(...out);return}
+  if(!ready){v.replaceChildren(h("p",{class:"muted"},"Opening the desk…"));return}
+  const fn={week:viewWeek,month:viewMonth,year:viewYear,team:viewTeam,review:viewReview}[ui.tab]||viewWeek;
+  out.push(...[].concat(fn()));
+  v.replaceChildren(...out.filter(x=>x!=null&&x!==false));
+}
+
+// ---------- shared bits ----------
+function weekNav(){
+  const go=n=>{ui.week=addDays(ui.week,7*n);store.set("week",ui.week);ui.month=weekMonth(ui.week);store.set("month",ui.month);syncTaskWindow();render()};
+  const thisW=iso(monday(new Date()));
+  return h("div",{class:"period"},
+    h("button",{class:"iconbtn","aria-label":"Previous week",onclick:()=>go(-1)},"‹"),
+    h("h2",{},"Week of "+fmtDay(ui.week)),
+    h("button",{class:"iconbtn","aria-label":"Next week",onclick:()=>go(1)},"›"),
+    ui.week!==thisW&&h("button",{class:"btn ghost small",onclick:()=>{ui.week=thisW;store.set("week",thisW);syncTaskWindow();render()}},"Today"));
+}
+function whoChips(){
+  const set=id=>{ui.who=id;store.set("who",id);render()};
+  return h("div",{class:"chips",role:"group","aria-label":"Show"},
+    h("button",{class:"chip","aria-pressed":String(ui.who==="all"),onclick:()=>set("all")},"Whole team"),
+    ...people().map(p=>h("button",{class:"chip","aria-pressed":String(ui.who===p.id),onclick:()=>set(p.id)},p.name)));
+}
+function budgetStrip(p,list){
+  const cap=capacity(p),plan=planned(list),scale=Math.max(cap.total,plan,1);
+  const byProj={};list.filter(t=>ACTIVE.has(t.status)&&!isProt(t)).forEach(t=>byProj[t.project]=(byProj[t.project]||0)+num(t.hours));
+  const segs=Object.entries(byProj).map(([pid,v])=>h("span",{title:proj(pid).name+" "+hrs(v),style:`width:${v/scale*100}%;background:${proj(pid).color}`}));
+  const over=plan-cap.avail;
+  return h("div",{class:"budget"},
+    h("div",{class:"budget-track",style:`--cols:${Math.round(scale)}`,role:"img","aria-label":`${hrs(plan)} planned of ${hrs(cap.avail)} available`},...segs,
+      h("i",{class:"budget-mark",style:`left:calc(${cap.avail/scale*100}% - 1px)`})),
+    h("div",{class:"budget-legend"},
+      h("span",{},h("b",{},hrs(plan))," planned of ",h("b",{},hrs(cap.avail))," available"),
+      over>0.01?h("span",{class:"over"},hrs(over)+" over. Move or drop work."):h("span",{class:"muted"},hrs(Math.max(0,cap.avail-plan))+" free · "+cap.buffer+"% buffer kept")),
+    num(p.protected)?h("div",{class:"tiny",style:"margin-top:2px"},"Plus "+hrs(num(p.protected))+" of family & social life, protected and never planned over."):null);
+}
+function taskRow(t,opts={}){
+  const p=proj(t.project);const done=t.status==="done";const gone=t.status==="next"||t.status==="dropped";
+  const toggleFocus=()=>{
+    if(!t.focus){const n=tasksFor(t.owner,t.week).filter(x=>x.focus&&x.id!==t.id&&ACTIVE.has(x.status)&&x.status!=="done").length;
+      if(n>=3){toast("Focus 3 is full. Unstar one first: three big moves a week is the limit.");return}}
+    save("tasks",t.id,{focus:!t.focus},true)};
+  return h("li",{class:(done?"done ":"")+(gone?"gone ":"")+(opts.compact?"compact":"")},
+    h("input",{type:"checkbox",checked:done,"aria-label":"Mark done: "+t.title,onchange:e=>save("tasks",t.id,{status:e.target.checked?"done":"todo"},true)}),
+    h("div",{class:"t",tabindex:"0",role:"button",onclick:()=>editTask(t),onkeydown:e=>{if(e.key==="Enter")editTask(t)}},
+      h("b",{},t.title),
+      h("div",{class:"meta"},h("span",{},h("i",{class:"dot",style:`background:${p.color}`}),p.name),
+        opts.showOwner&&h("span",{},pName(t.owner)),t.hours?h("span",{},hrs(num(t.hours))):null,t.day&&opts.showDay!==false?h("span",{},t.day):null,
+        !opts.compact&&t.goal&&S.goals[t.goal]?h("span",{title:"Moves monthly goal"},"↳ "+S.goals[t.goal].title):null)),
+    h("div",{class:"ctrls"},
+      h("button",{class:"star","aria-pressed":String(!!t.focus),"aria-label":(t.focus?"Remove from":"Add to")+" Focus 3",title:"Focus 3",onclick:toggleFocus},t.focus?"★":"☆"),
+      !opts.compact&&h("button",{class:"star del","aria-label":"Delete task: "+t.title,title:"Delete",onclick:()=>deleteTask(t)},"×"),
+      !opts.compact&&h("select",{"aria-label":"Status",onchange:e=>save("tasks",t.id,{status:e.target.value},true)},...STATUSES.map(([k,l])=>h("option",{value:k,selected:t.status===k},l)))));
+}
+
+// ---------- WEEK ----------
+function viewWeek(){
+  const out=[h("div",{class:"bar"},weekNav(),whoChips())];
+  if(!people().length)return out.concat(emptyStart());
+  if(ui.who==="all"){
+    if(!tasksFor(null,ui.week).length){let w2=null;for(let i=1;i<=6;i++){const w=addDays(ui.week,7*i);if(tasksFor(null,w).length){w2=w;break}}
+      if(w2)out.push(h("div",{class:"banner"},"Nothing planned for this week yet. The plan starts the week of "+fmtDay(w2)+". ",h("button",{class:"btn small",onclick:()=>{ui.week=w2;syncTaskWindow();render()}},"Go to that week")))}
+    const cards=people().map(p=>{
+      const list=tasksFor(p.id,ui.week);const focus=list.filter(t=>t.focus&&t.status!=="dropped"&&t.status!=="next");const life=list.filter(t=>isProt(t));
+      const open=list.filter(t=>t.status==="todo"||t.status==="doing").length,waiting=list.filter(t=>t.status==="waiting").length,done=list.filter(t=>t.status==="done").length;
+      return h("section",{class:"sheet"},
+        h("div",{class:"person-head"},h("h3",{},h("button",{onclick:()=>{ui.who=p.id;store.set("who",p.id);render()}},p.name)),h("button",{class:"btn small",onclick:()=>{ui.who=p.id;store.set("who",p.id);render()}},"Open week")),h("p",{class:"tiny",style:"margin:2px 0 0"},p.role||""),
+        budgetStrip(p,list),
+        h("div",{class:"focus"},h("h4",{},"Focus 3"),focus.length?h("ul",{class:"ledger"},focus.map(t=>taskRow(t,{compact:true,showDay:true}))):h("p",{class:"tiny"},"No focus set. Star up to three tasks that matter most this week.")),
+        life.length?h("p",{class:"tiny"},"Protected: "+life.map(t=>t.title).join("; ")):null,
+        h("p",{class:"tiny"},`${done} done · ${open} open · ${waiting} waiting`));
+    });
+    return out.concat(h("div",{class:"grid people-cards"},cards));
+  }
+  const p=S.people[ui.who];if(!p){ui.who="all";return viewWeek()}
+  const list=tasksFor(p.id,ui.week);
+  const focus=list.filter(t=>t.focus&&t.status!=="dropped"&&t.status!=="next");
+  const life=list.filter(t=>isProt(t)&&!focus.includes(t));
+  const rest=list.filter(t=>!focus.includes(t)&&!isProt(t));
+  const order={doing:0,todo:1,waiting:2,done:3,next:4,dropped:5};
+  const groups=new Map();
+  if(ui.groupBy==="day"){DAYS.slice(1).concat([""]).forEach(d=>groups.set(d,[]));rest.forEach(t=>(groups.get(t.day||"")||groups.get("")).push(t))}
+  else{projects().forEach(pr=>groups.set(pr.id,[]));rest.forEach(t=>{if(!groups.has(t.project))groups.set(t.project,[]);groups.get(t.project).push(t)})}
+  const budgets=p.budgets||{};
+  const sections=[...groups.entries()].filter(([,ts])=>ts.length).map(([k,ts])=>{
+    ts.sort((a,b)=>order[a.status]-order[b.status]);
+    const label=ui.groupBy==="day"?(k||"Any day"):proj(k).name;
+    let note=hrs(planned(ts));
+    if(ui.groupBy==="project"&&budgets[k])note+=" of "+hrs(num(budgets[k]))+" budget";
+    return h("div",{class:"group"},h("h4",{},label,h("span",{},note)),h("ul",{class:"ledger"},ts.map(t=>taskRow(t,{showDay:ui.groupBy!=="day"}))));
+  });
+  const prevOpen=tasksFor(p.id,addDays(ui.week,-7)).filter(t=>["todo","doing","waiting","next"].includes(t.status)&&!t.repeat);
+  const titles=new Set(list.map(t=>t.title));
+  const routines=tasksFor(p.id,addDays(ui.week,-7)).filter(t=>t.repeat&&!titles.has(t.title));
+  let ahead=null;if(!list.length){for(let i=1;i<=6;i++){const w=addDays(ui.week,7*i);if(tasksFor(p.id,w).length){ahead=w;break}}}
+  return out.concat(
+    ahead?h("div",{class:"banner"},"Nothing in this week yet. "+p.name+"’s plan starts the week of "+fmtDay(ahead)+". ",h("button",{class:"btn small",onclick:()=>{ui.week=ahead;syncTaskWindow();render()}},"Go to that week")):null,
+    routines.length?h("div",{class:"banner"},`${routines.length} weekly routine${routines.length===1?"":"s"} (learning, authority, family time…) from last week aren't here yet. `,h("button",{class:"btn small",onclick:()=>copyRoutines(p.id,routines)},"Add them to this week")):null,
+    prevOpen.length?h("div",{class:"banner"},`${prevOpen.length} unfinished from last week. `,h("button",{class:"btn small",onclick:()=>rollForward(p.id,addDays(ui.week,-7))},"Bring them into this week")):null,
+    h("section",{class:"sheet"},
+      h("div",{class:"person-head"},h("h3",{},p.name+"’s week"),h("div",{class:"chips"},
+        h("button",{class:"chip","aria-pressed":String(ui.groupBy==="day"),onclick:()=>{ui.groupBy="day";store.set("groupBy","day");render()}},"By day"),
+        h("button",{class:"chip","aria-pressed":String(ui.groupBy==="project"),onclick:()=>{ui.groupBy="project";store.set("groupBy","project");render()}},"By project"))),
+      budgetStrip(p,list),
+      h("div",{class:"focus"},h("h4",{},"Focus 3"),focus.length?h("ul",{class:"ledger"},focus.map(t=>taskRow(t))):h("p",{class:"tiny"},"Star up to three tasks. If only these get done, the week still moved.")),
+      sections.length?sections:h("p",{class:"muted"},"Nothing planned yet. Add the work that moves this week's goals."),
+      life.length?h("div",{class:"group"},h("h4",{},"Family & social life",h("span",{},"protected, not counted in work hours")),h("ul",{class:"ledger"},life.map(t=>taskRow(t)))):null,
+      quickAdd(p)),
+    projectBudgetTable(p,list));
+}
+function quickAdd(p){
+  const mine=projects().filter(pr=>(p.budgets||{})[pr.id]!=null||pr.lead===p.id||pr.protected);
+  const opts=(mine.length?mine:projects());
+  const f=h("form",{class:"add","aria-label":"Add a task",onsubmit:async e=>{e.preventDefault();const fd=new FormData(f);const title=String(fd.get("title")||"").trim();if(!title)return;
+    const id=uid("t");if(await save("tasks",id,{title,owner:p.id,project:fd.get("project"),hours:num(fd.get("hours")),day:fd.get("day")||"",week:ui.week,status:"todo",focus:false,goal:"",notes:"",created:Date.now()}))f.reset()}},
+    h("input",{name:"title",placeholder:"Add a task with a clear outcome","aria-label":"Task"}),
+    h("select",{name:"project","aria-label":"Project"},opts.map(pr=>h("option",{value:pr.id},pr.name))),
+    h("input",{name:"hours",type:"number",step:"0.25",min:"0",placeholder:"Hrs","aria-label":"Hours"}),
+    h("select",{name:"day","aria-label":"Day"},DAYS.map(d=>h("option",{value:d},d||"Any day"))),
+    h("button",{class:"btn primary",type:"submit"},"Add"));
+  return f;
+}
+function projectBudgetTable(p,list){
+  const b=p.budgets||{};const ids=new Set([...Object.keys(b),...list.map(t=>t.project)]);
+  const rows=projects().filter(pr=>ids.has(pr.id)&&!pr.protected).map(pr=>{const pl=planned(list.filter(t=>t.project===pr.id));const bud=num(b[pr.id]);const over=bud&&pl>bud;
+    return h("tr",{},h("td",{},h("i",{class:"dot",style:`background:${pr.color}`}),pr.name),h("td",{class:"tiny"},pr.group),h("td",{class:"num"},hrs(pl)),h("td",{class:"num"},bud?hrs(bud):"–"),h("td",{class:over?"over":"muted"},over?"Over budget":pl===0&&bud?"Not started":""))});
+  return h("section",{class:"sheet"},h("h3",{},"Where "+p.name+"’s hours go"),h("p",{class:"tiny"},"Weekly budget per project. Change budgets in Team & engines."),
+    h("div",{class:"scroll"},h("table",{},h("thead",{},h("tr",{},h("th",{},"Project"),h("th",{},"Group"),h("th",{class:"num"},"Planned"),h("th",{class:"num"},"Budget"),h("th",{},""))),h("tbody",{},rows))));
+}
+async function deleteTask(t){
+  const data=clean({...t});await remove("tasks",t.id);
+  toast("Task deleted.",{label:"Undo",fn:()=>save("tasks",t.id,data)});
+}
+async function copyRoutines(pid,list){
+  for(const t of list){const c=clean({...t});c.week=ui.week;c.status="todo";c.created=Date.now();c.carried=0;await save("tasks",uid("t"),c)}
+  toast(list.length+" routine"+(list.length===1?"":"s")+" added.");
+}
+async function rollForward(pid,fromWeek){
+  const to=addDays(fromWeek,7);
+  const list=tasksFor(pid,fromWeek).filter(t=>["todo","doing","waiting","next"].includes(t.status)&&!t.repeat);
+  for(const t of list)await save("tasks",t.id,{week:to,status:t.status==="waiting"?"waiting":"todo",carried:num(t.carried)+1},true);
+  toast(list.length+" task"+(list.length===1?"":"s")+" moved to the week of "+fmtDay(to)+".");
+}
+
+// ---------- MONTH ----------
+function monthsOfYear(){const ys=settings().yearStart;return Array.from({length:12},(_,i)=>addMonths(ys,i))}
+function monthStrip(){
+  const ms=monthsOfYear();
+  return h("div",{class:"months",role:"group","aria-label":settings().yearLabel+" months"},ms.map(m=>{
+    const gs=Object.values(S.goals).filter(g=>g.level==="month"&&g.month===m);const d=gs.filter(g=>g.status==="done").length;
+    return h("button",{"aria-current":String(m===ui.month),onclick:()=>{ui.month=m;store.set("month",m);syncTaskWindow();render()}},fmtMon(m),h("small",{},gs.length?`${d}/${gs.length}`:"–"))}));
+}
+function progress(g){
+  const t=num(g.target),c=num(g.current);
+  const linked=Object.values(S.tasks).filter(x=>x.goal===g.id);
+  const parts=[];
+  if(t>0){parts.push(h("div",{class:"pbar"},h("i",{style:`width:${Math.min(100,c/t*100)}%`})));
+    parts.push(h("div",{class:"tiny"},h("input",{class:"cur",type:"number",value:c,step:"any","aria-label":"Current value for "+g.title,onchange:e=>save("goals",g.id,{current:num(e.target.value)},true)})," of "+t.toLocaleString("en-IN")+" "+(g.unit||"")))}
+  if(linked.length)parts.push(h("div",{class:"tiny"},`${linked.filter(x=>x.status==="done").length} of ${linked.length} linked tasks done (nearby weeks)`));
+  return parts;
+}
+function goalCard(g){
+  const st=GOAL_ST.find(s=>s[0]===g.status)||GOAL_ST[0];
+  const parent=g.parent&&S.goals[g.parent];
+  return h("div",{class:"goal"},
+    h("div",{class:"goal-top"},h("div",{},h("div",{class:"goal-title",tabindex:"0",role:"button",onclick:()=>editGoal(g),onkeydown:e=>{if(e.key==="Enter")editGoal(g)}},g.title),
+      h("div",{class:"tiny"},pName(g.owner),parent?" · feeds “"+parent.title+"”":"")),
+      h("span",{class:"status "+st[0]},st[1])),
+    progress(g));
+}
+function viewMonth(){
+  const out=[h("div",{class:"bar"},h("div",{class:"period"},h("button",{class:"iconbtn","aria-label":"Previous month",onclick:()=>{ui.month=addMonths(ui.month,-1);store.set("month",ui.month);syncTaskWindow();render()}},"‹"),h("h2",{},fmtMonth(ui.month)),h("button",{class:"iconbtn","aria-label":"Next month",onclick:()=>{ui.month=addMonths(ui.month,1);store.set("month",ui.month);syncTaskWindow();render()}},"›")),
+    h("button",{class:"btn primary",onclick:()=>editGoal({level:"month",month:ui.month,status:"on"})},"Add monthly goal")),monthStrip()];
+  const gs=Object.values(S.goals).filter(g=>g.level==="month"&&g.month===ui.month);
+  if(!gs.length)out.push(h("div",{class:"sheet empty"},h("p",{},"No goals for "+fmtMonth(ui.month)+" yet."),h("p",{class:"muted"},"Pick at most two outcomes per engine. Each should feed a Year 1 goal.")));
+  for(const grp of GROUPS){
+    const prs=projects().filter(p=>p.group===grp&&gs.some(g=>g.project===p.id));if(!prs.length)continue;
+    out.push(h("section",{class:"sheet"},h("h3",{},grp),...prs.map(pr=>{const mine=gs.filter(g=>g.project===pr.id);
+      return h("div",{class:"group"},h("h4",{},h("span",{style:"font:inherit;color:inherit"},h("i",{class:"dot",style:`background:${pr.color}`}),pr.name),h("span",{},"Lead: "+pName(pr.lead)+(mine.length>2?" · more than 2 goals, consider parking one":""))),...mine.map(goalCard))})));
+  }
+  return out;
+}
+
+// ---------- YEAR ----------
+function viewYear(){
+  const s=settings();const ms=monthsOfYear();
+  const out=[h("div",{class:"bar"},h("div",{class:"period"},h("h2",{},s.yearLabel+": "+fmtMonth(ms[0])+" to "+fmtMonth(ms[11]))),
+    h("button",{class:"btn primary",onclick:()=>editGoal({level:"year",status:"on"})},"Add year goal")),monthStrip()];
+  const ys=Object.values(S.goals).filter(g=>g.level==="year");
+  if(!ys.length)out.push(h("div",{class:"sheet empty"},h("p",{},"No Year 1 goals yet."),h("p",{class:"muted"},"One measurable goal per engine is enough to steer the whole year.")));
+  for(const grp of GROUPS){
+    const list=ys.filter(g=>proj(g.project).group===grp).sort((a,b)=>(proj(a.project).order??99)-(proj(b.project).order??99));if(!list.length)continue;
+    out.push(h("section",{class:"sheet"},h("h3",{},grp),...list.map(g=>{
+      const kids=Object.values(S.goals).filter(k=>k.parent===g.id).sort((a,b)=>a.month.localeCompare(b.month));
+      return h("div",{class:"goal"},
+        h("div",{class:"goal-top"},h("div",{},h("div",{class:"goal-title",tabindex:"0",role:"button",onclick:()=>editGoal(g),onkeydown:e=>{if(e.key==="Enter")editGoal(g)}},g.title),
+          h("div",{class:"tiny"},h("i",{class:"dot",style:`background:${proj(g.project).color}`}),proj(g.project).name+" · "+pName(g.owner))),
+          h("span",{class:"status "+(g.status||"on")},(GOAL_ST.find(x=>x[0]===g.status)||GOAL_ST[0])[1])),
+        progress(g),
+        h("div",{class:"mchips"},kids.map(k=>h("button",{class:"mchip",title:k.title,onclick:()=>{ui.month=k.month;store.set("month",k.month);ui.tab="month";store.set("tab","month");drawChrome();syncTaskWindow();render()}},(k.status==="done"?"✓ ":"")+fmtMon(k.month)+": "+k.title)),
+          h("button",{class:"mchip",onclick:()=>editGoal({level:"month",month:ui.month,project:g.project,owner:g.owner,parent:g.id,status:"on"})},"+ monthly step")));
+    })));
+  }
+  return out;
+}
+
+// ---------- TEAM ----------
+function viewTeam(){
+  const ps=people();
+  const head=h("tr",{},h("th",{},"Engine / project"),h("th",{},"What it covers"),h("th",{},"Lead"),...ps.map(p=>h("th",{class:"num"},p.name)));
+  const rows=projects().map(pr=>h("tr",{},
+    h("td",{},h("button",{class:"btn ghost small",style:"padding:0;font-weight:700;color:var(--ink)",onclick:()=>editProject(pr)},h("i",{class:"dot",style:`background:${pr.color}`}),pr.name),h("div",{class:"tiny"},pr.group)),
+    h("td",{class:"tiny",style:"max-width:340px"},pr.functions||pr.purpose||""),
+    h("td",{},pName(pr.lead)),
+    ...ps.map(p=>h("td",{class:"num"},pr.protected?(num(p.protected)?hrs(num(p.protected)):""):(p.budgets||{})[pr.id]?hrs(num(p.budgets[pr.id])):""))));
+  const totals=h("tr",{},h("td",{},h("b",{},"Work + growth budget")),h("td",{}),h("td",{}),...ps.map(p=>{const sum=Object.values(p.budgets||{}).reduce((s,v)=>s+num(v),0);const c=capacity(p);return h("td",{class:"num "+(sum>c.avail?"over":"")},hrs(sum)+" / "+hrs(c.avail))}));
+  return [
+    h("div",{class:"bar"},h("div",{class:"period"},h("h2",{},"Team & engines")),h("div",{class:"chips"},h("button",{class:"btn",onclick:()=>editPerson({capacity:40,buffer:15,budgets:{}})},"Add person"),h("button",{class:"btn",onclick:()=>editProject({group:"Conscious India",color:"#7A1218"})},"Add project"),h("button",{class:"btn ghost",onclick:editSettings},"Year settings"))),
+    h("section",{class:"sheet"},h("h3",{},"Who owns what, and how many hours a week it gets"),h("p",{class:"tiny"},"Conscious India's 16 work areas are grouped into six engines so each has one lead. Budgets above available hours turn red."),
+      h("div",{class:"scroll"},h("table",{},h("thead",{},head),h("tbody",{},rows,totals)))),
+    h("div",{class:"grid"},ps.map(p=>{const c=capacity(p);return h("section",{class:"sheet"},h("div",{class:"person-head"},h("h3",{},p.name),h("button",{class:"btn small",onclick:()=>editPerson(p)},"Edit")),h("p",{class:"tiny"},p.role||""),h("p",{},`${hrs(c.total)} a week for work and growth, ${c.buffer}% kept free, so ${hrs(c.avail)} to plan.`),num(p.protected)?h("p",{class:"tiny"},`${hrs(num(p.protected))} of family & social life sits outside that and stays protected.`):null)})),
+    h("section",{class:"sheet"},h("h3",{},"How we work"),h("ol",{class:"rules"},
+      h("li",{},"Every task has one owner, a week, hours and a status."),
+      h("li",{},"Each person stars a Focus 3 on Monday. Everything else is secondary."),
+      h("li",{},"Plan up to your available hours, never past them. The buffer is for real life."),
+      h("li",{},"Everyone keeps learning, authority and social presence in their week, and family time stays protected, not squeezed around work."),
+      h("li",{},"At most two monthly goals per engine, each feeding a Year 1 goal."),
+      h("li",{},"Friday: tick off, then move or drop what's left. Unfinished isn't failure; it's a decision.")),
+      h("p",{class:"tiny"},"Desk version 3 (web) · signed in as "+(authUser?authUser.email:""))),
+  ];
+}
+
+// ---------- REVIEW ----------
+function viewReview(){
+  const out=[h("div",{class:"bar"},weekNav(),whoChips())];
+  const ps=ui.who==="all"?people():people().filter(p=>p.id===ui.who);
+  for(const p of ps){
+    const list=tasksFor(p.id,ui.week);const c=capacity(p);
+    const doneH=list.filter(t=>t.status==="done").reduce((s,t)=>s+num(t.hours),0);
+    const cnt=s=>list.filter(t=>t.status===s).length;
+    const unfinished=list.filter(t=>["todo","doing","waiting","next"].includes(t.status)&&!t.repeat);
+    const rid=ui.week+"_"+p.id;const r=S.reviews[rid]||{};
+    const field=(k,label)=>h("div",{class:"field"},h("label",{for:rid+k},label),h("textarea",{id:rid+k,value:r[k]||"",onchange:e=>save("reviews",rid,clean({...(S.reviews[rid]||{}),week:ui.week,person:p.id,[k]:e.target.value}))}));
+    const focusDone=list.filter(t=>t.focus&&t.status==="done").length,focusAll=list.filter(t=>t.focus).length;
+    out.push(h("section",{class:"sheet"},
+      h("div",{class:"person-head"},h("h3",{},p.name),h("span",{class:"tiny"},"Week of "+fmtDay(ui.week))),
+      h("div",{class:"scroll"},h("table",{},h("tbody",{},
+        h("tr",{},h("td",{},"Planned"),h("td",{class:"num"},hrs(planned(list))+" of "+hrs(c.avail))),
+        h("tr",{},h("td",{},"Done"),h("td",{class:"num"},`${cnt("done")} tasks, ${hrs(doneH)}`)),
+        h("tr",{},h("td",{},"Focus 3 done"),h("td",{class:"num"},`${focusDone} of ${focusAll}`)),
+        h("tr",{},h("td",{},"Still open or waiting"),h("td",{class:"num"},String(unfinished.length))),
+        h("tr",{},h("td",{},"Dropped"),h("td",{class:"num"},String(cnt("dropped"))))))),
+      unfinished.length?h("p",{},h("button",{class:"btn primary",onclick:()=>rollForward(p.id,ui.week)},`Move ${unfinished.length} unfinished to next week`),h("span",{class:"tiny"}," First drop anything that no longer deserves time.")):h("p",{class:"tiny"},"Nothing left open."),
+      h("div",{class:"row2"},field("momentum","What created momentum?"),field("leak","Biggest time leak")),
+      field("change","One change for next week")));
+  }
+  return out;
+}
+
+// ---------- dialogs ----------
+function dialog(title,fields,values,onSave,onDelete){
+  const dlg=document.getElementById("dlg");
+  const inputs={};
+  const mk=f=>{
+    const id="f_"+f.key;let el;
+    if(f.type==="select")el=h("select",{id},f.options.map(([v,l])=>h("option",{value:v,selected:String(values[f.key]??"")===String(v)},l)));
+    else if(f.type==="textarea")el=h("textarea",{id,value:values[f.key]??""});
+    else if(f.type==="check"){el=h("input",{id,type:"checkbox",checked:!!values[f.key]});inputs[f.key]=el;return h("div",{class:"field check"},el,h("label",{for:id},f.label))}
+    else el=h("input",{id,type:f.type||"text",value:values[f.key]??"",step:f.step,min:f.min,required:f.required});
+    inputs[f.key]=el;return h("div",{class:"field"},h("label",{for:id},f.label),el)};
+  const body=[];for(let i=0;i<fields.length;i++){const f=fields[i];if(f.half&&fields[i+1]?.half){body.push(h("div",{class:"row2"},mk(f),mk(fields[i+1])));i++}else body.push(mk(f))}
+  const form=h("form",{method:"dialog",onsubmit:async e=>{e.preventDefault();const out={};for(const f of fields){const el=inputs[f.key];out[f.key]=f.type==="check"?el.checked:f.type==="number"?num(el.value):el.value.trim?el.value.trim():el.value}
+      if(fields.some(f=>f.required&&!out[f.key])){toast("Add a title first.");return}
+      if(await onSave(out)!==false)dlg.close()}},
+    h("h3",{},title),...body,
+    h("div",{class:"dlg-actions"},onDelete?h("button",{type:"button",class:"btn ghost",style:"color:var(--warn)",onclick:async e=>{const b=e.currentTarget;if(!b.dataset.armed){b.dataset.armed="1";b.textContent="Tap again to delete";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="Delete"}},4000);return}await onDelete();dlg.close()}},"Delete"):h("span"),
+      h("div",{class:"chips"},h("button",{type:"button",class:"btn",onclick:()=>dlg.close()},"Cancel"),h("button",{type:"submit",class:"btn primary"},"Save"))));
+  dlg.replaceChildren(form);dlg.showModal();setTimeout(()=>form.querySelector("input,select,textarea")?.focus(),30);
+}
+const personOpts=()=>[["","Unassigned"],...people().map(p=>[p.id,p.name])];
+const projOpts=()=>projects().map(p=>[p.id,p.group==="Conscious India"?"CI · "+p.name:p.name]);
+function editTask(t){
+  const goals=Object.values(S.goals).filter(g=>g.level==="month").sort((a,b)=>b.month.localeCompare(a.month));
+  dialog(t.id?"Edit task":"New task",[
+    {key:"title",label:"Task / outcome",required:true},
+    {key:"owner",label:"Owner",type:"select",options:personOpts(),half:true},{key:"project",label:"Project",type:"select",options:projOpts(),half:true},
+    {key:"week",label:"Week (any date in it)",type:"date",half:true},{key:"day",label:"Day",type:"select",options:DAYS.map(d=>[d,d||"Any day"]),half:true},
+    {key:"hours",label:"Hours",type:"number",step:"0.25",min:"0",half:true},{key:"status",label:"Status",type:"select",options:STATUSES,half:true},
+    {key:"goal",label:"Moves which monthly goal?",type:"select",options:[["","None"],...goals.map(g=>[g.id,fmtMon(g.month)+": "+g.title])]},
+    {key:"focus",label:"Part of Focus 3",type:"check"},{key:"repeat",label:"Weekly routine (offer it again every week)",type:"check"},
+    {key:"notes",label:"Next action / notes",type:"textarea"}],
+    {...t},
+    v=>{v.week=iso(monday(parse(v.week||ui.week)));if(v.focus&&!t.focus){const n=tasksFor(v.owner,v.week).filter(x=>x.focus&&x.id!==t.id&&x.status!=="done").length;if(n>=3){toast("Focus 3 is full for that week.");v.focus=false}}
+      return save("tasks",t.id||uid("t"),clean({...t,...v,created:t.created||Date.now()}))},
+    t.id&&(()=>deleteTask(t)));
+}
+function editGoal(g){
+  const years=Object.values(S.goals).filter(x=>x.level==="year");
+  dialog(g.id?"Edit goal":(g.level==="year"?"New Year 1 goal":"New monthly goal"),[
+    {key:"title",label:"Goal (an outcome you can check)",required:true},
+    {key:"level",label:"Level",type:"select",options:[["year","Year 1"],["month","Month"]],half:true},{key:"month",label:"Month (for monthly goals)",type:"month",half:true},
+    {key:"project",label:"Engine / project",type:"select",options:projOpts(),half:true},{key:"owner",label:"Owner",type:"select",options:personOpts(),half:true},
+    {key:"parent",label:"Feeds which Year 1 goal?",type:"select",options:[["","None"],...years.map(y=>[y.id,y.title])]},
+    {key:"target",label:"Target number (optional)",type:"number",step:"any",half:true},{key:"unit",label:"Unit",half:true},
+    {key:"current",label:"Current",type:"number",step:"any",half:true},{key:"status",label:"Status",type:"select",options:GOAL_ST,half:true},
+    {key:"notes",label:"Notes",type:"textarea"}],
+    {...g,month:g.month||ui.month},
+    v=>{if(v.level==="year"){v.month="";v.parent=""}
+      if(v.level==="month"&&!g.id){const same=Object.values(S.goals).filter(x=>x.level==="month"&&x.month===v.month&&x.project===v.project).length;if(same>=2)toast("That engine already has two goals this month. Saved, but consider parking one.")}
+      return save("goals",g.id||uid("g"),clean({...g,...v}))},
+    g.id&&(()=>remove("goals",g.id)));
+}
+function editProject(pr){
+  dialog(pr.id?"Edit project":"New project",[
+    {key:"name",label:"Name",required:true},
+    {key:"group",label:"Group",type:"select",options:GROUPS.map(g=>[g,g]),half:true},{key:"lead",label:"Lead (one person)",type:"select",options:personOpts(),half:true},
+    {key:"color",label:"Colour",type:"color",half:true},{key:"order",label:"Sort order",type:"number",half:true},
+    {key:"protected",label:"Protected time (not counted against work hours)",type:"check"},
+    {key:"functions",label:"What it covers",type:"textarea"}],
+    {...pr},v=>save("projects",pr.id||uid("p"),clean({...pr,...v})),
+    pr.id&&(()=>remove("projects",pr.id)));
+}
+function editPerson(p){
+  const prs=projects();
+  const fields=[{key:"name",label:"Name",required:true},{key:"email",label:"Google sign-in email (picks “I am” automatically)",type:"email"},{key:"role",label:"Role / owns"},
+    {key:"capacity",label:"Hours a week for work + growth",type:"number",step:"0.5",min:"0",half:true},{key:"buffer",label:"Buffer %",type:"number",min:"0",half:true},
+    {key:"protected",label:"Protected family & social hours a week",type:"number",step:"0.5",min:"0"},
+    ...prs.filter(pr=>!pr.protected).map((pr,i)=>({key:"b_"+pr.id,label:"Weekly hours: "+pr.name,type:"number",step:"0.5",min:"0",half:true}))];
+  const vals={...p};prs.filter(pr=>!pr.protected).forEach(pr=>vals["b_"+pr.id]=(p.budgets||{})[pr.id]??"");
+  dialog(p.id?"Edit "+p.name:"Add person",fields,vals,v=>{const budgets={};prs.filter(pr=>!pr.protected).forEach(pr=>{if(v["b_"+pr.id])budgets[pr.id]=v["b_"+pr.id];delete v["b_"+pr.id]});
+    return save("people",p.id||uid("u"),clean({...p,...v,budgets}))},p.id&&(()=>remove("people",p.id)));
+}
+function editSettings(){
+  const s=settings();
+  dialog("Year settings",[{key:"yearLabel",label:"Name"},{key:"yearStart",label:"First month",type:"month"}],s,v=>save("meta","settings",clean({...S.settings,...v})));
+}
+function emptyStart(){
+  return h("div",{class:"sheet empty"},h("p",{},"No one is on the desk yet."),h("p",{class:"muted"},"Add the team, then the projects each person works on."),
+    h("div",{class:"chips",style:"justify-content:center"},h("button",{class:"btn primary",onclick:()=>editPerson({capacity:40,buffer:15,budgets:{}})},"Add person"),h("button",{class:"btn",onclick:()=>editProject({group:"Conscious India",color:"#7A1218"})},"Add project")));
+}
+boot();
+})();
+</script>
+</body>
+</html>
