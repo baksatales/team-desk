@@ -11,7 +11,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-/* ===== PASTE YOUR FIREBASE CONFIG HERE (Firebase console > Project settings > Your apps > Web app) ===== */
+/* ===== PASTE YOUR FIREBASE CONFIG HERE (Firebase console > Project settings > Your apps > Web app) =====
+   You can paste your values here, OR keep a separate config.js file next to index.html. Either works. */
 window.FIREBASE_CONFIG = {
   apiKey: "AIzaSyDBXGw5Wt9KjZ9VG1qhvykZq1_zXbEkDUw",
   authDomain: "team-desk-40b1f.firebaseapp.com",
@@ -20,6 +21,7 @@ window.FIREBASE_CONFIG = {
 };
 /* ======================================================================================================= */
 </script>
+<script src="config.js" onerror="void 0"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&display=swap" rel="stylesheet">
@@ -106,6 +108,9 @@ main{max-width:1180px;margin:0 auto;padding:20px 20px 60px}
 .ledger .t b{font-weight:400}
 .ledger .meta{font-size:.82rem;color:var(--ink-3);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:baseline}
+.slot{font-weight:700;color:var(--ink)}
+.daynote{margin-top:8px}.daynote textarea{min-height:44px;font-size:.9rem;background:var(--bg)}.daynote label{font-size:.8rem;color:var(--ink-3);font-weight:700}
+.why{font-size:.84rem;color:var(--ink-2);margin-top:2px;line-height:1.35}.why span{font-weight:700;color:var(--leaf)}.why.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ledger .done .t b{text-decoration:line-through;color:var(--ink-3)}
 .ledger .gone{opacity:.55}
 .ctrls{display:flex;gap:4px;align-items:center}
@@ -120,7 +125,7 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--leaf)}
 .group{margin-top:14px}
 .group h4{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:2px solid var(--ink);padding-bottom:4px}
 .group h4 span{font:400 .85rem var(--body);color:var(--ink-2)}
-.add{display:grid;grid-template-columns:1fr 150px 70px 90px auto;gap:6px;margin-top:12px}
+.add{display:grid;grid-template-columns:1fr 150px 105px 90px 110px auto;gap:6px;margin-top:12px}
 .add input,.add select{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:7px 9px;min-width:0}
 .banner{border-radius:10px;padding:10px 14px;margin-bottom:14px;border:1px solid var(--line);background:var(--paper)}
 .banner.warn{border-color:var(--warn);background:var(--bahi-soft)}
@@ -150,6 +155,18 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--leaf)}
 .mchip{font-size:.8rem;border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:pointer;background:var(--paper)}
 
 table{border-collapse:collapse;width:100%;font-size:.92rem}
+.sprint-meters{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.pbar.big{height:12px}
+.prio-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));margin-top:10px}
+.prio{border:1px solid var(--line);border-top:4px solid var(--bahi);border-radius:10px;padding:12px}
+.board table{table-layout:fixed}
+.board th.rowh{width:90px;position:sticky;left:0;background:var(--paper);z-index:1}
+.board td.cell{vertical-align:top;padding:4px;width:165px}
+.nowcol{background:var(--marigold-soft)}
+.wkbtn{all:unset;cursor:pointer;font-weight:700;display:block;text-align:center}.wkbtn small{display:block;font-weight:400;color:var(--ink-3);font-size:.72rem}
+.mini{display:block;width:100%;text-align:left;font-size:.76rem;line-height:1.25;border:1px solid var(--line);border-left:4px solid var(--ink-3);background:var(--paper);border-radius:6px;padding:4px 6px;margin-bottom:4px;cursor:pointer;color:var(--ink)}
+.mini .daysdone{display:block;color:var(--ink-3);font-weight:700}
+.mini.ok{opacity:.6;text-decoration:line-through}
 .scroll{overflow-x:auto}
 th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--ruling);vertical-align:top}
 th{font-weight:700;color:var(--ink-2);font-size:.85rem}
@@ -184,7 +201,7 @@ dialog h3{font-family:var(--display);margin:0 0 12px}
 <body>
 <header class="cover">
   <div class="cover-top">
-    <h1 class="brand">Team Desk <small>Baksa Tales × Conscious India · year → month → week</small></h1>
+    <h1 class="brand">Team Desk <small>Baksa Tales × Conscious India · year → 90 days → week</small></h1>
     <div class="me"><label>I am <select id="me" aria-label="Who is using this"></select></label><button id="signout" class="signout" hidden>Sign out</button></div>
   </div>
   <nav class="tabs" role="tablist" id="tabs"></nav>
@@ -197,11 +214,11 @@ dialog h3{font-family:var(--display);margin:0 0 12px}
 const STATUSES=[["todo","To do"],["doing","Doing"],["waiting","Waiting on someone"],["done","Done"],["next","Next week"],["dropped","Dropped"]];
 const ACTIVE=new Set(["todo","doing","waiting","done"]);
 const GOAL_ST=[["on","On track"],["risk","At risk"],["done","Done"],["parked","Parked"]];
-const DAYS=["","Mon","Tue","Wed","Thu","Fri","Sat"];
+const DAYS=["","Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const GROUPS=["Conscious India","Baksa Tales","Other work","Life & growth"];
-const TABS=[["week","This week"],["month","Month"],["year","Year 1"],["team","Team & engines"],["review","Friday review"]];
+const TABS=[["week","This week"],["sprint","90-day sprint"],["year","Year 1"],["team","Team & engines"],["review","Friday review"]];
 
-const S={people:{},projects:{},goals:{},tasks:{},reviews:{},settings:{}};
+const S={people:{},projects:{},goals:{},tasks:{},reviews:{},daynotes:{},settings:{}};
 let db=null, fs=null, authUser=null, authReady=false, setupNeeded=false, denied=false, subs=[], readOnly=false, ready=false, taskUnsub=null, taskWin="";
 
 // ---------- local prefs ----------
@@ -217,12 +234,18 @@ const fmtDay=s=>parse(s).toLocaleDateString("en-IN",{day:"numeric",month:"short"
 const fmtMonth=m=>parse(m+"-01").toLocaleDateString("en-IN",{month:"long",year:"numeric"});
 const fmtMon=m=>parse(m+"-01").toLocaleDateString("en-IN",{month:"short"});
 const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0};
-const hrs=n=>(Math.round(n*100)/100).toString().replace(/\.0+$/,"")+"h";
+const hrs=n=>{const m=Math.round(num(n)*60);if(m===0)return "0h";const H=Math.floor(Math.abs(m)/60),M=Math.abs(m)%60,sg=m<0?"-":"";return sg+(H?H+"h":"")+(H&&M?" ":"")+(M?M+"m":"")};
+const parseDur=v=>{v=String(v||"").trim().toLowerCase();if(!v)return 0;let m=v.match(/^(\d+):(\d{1,2})$/);if(m)return +m[1]+ +m[2]/60;
+  let H=0,M=0,ok=false;const hm=v.match(/(\d+(?:\.\d+)?)\s*h/),mm=v.match(/(\d+)\s*m/);if(hm){H=+hm[1];ok=true}if(mm){M=+mm[1];ok=true}if(ok)return H+M/60;
+  const n=parseFloat(v);return isFinite(n)?n:0};
+const fmtTime=t=>{if(!t)return "";const[H,M]=t.split(":").map(Number);const ap=H>=12?"pm":"am";const h12=((H+11)%12)+1;return h12+(M?":"+String(M).padStart(2,"0"):"")+" "+ap};
+const endTime=(t,hours)=>{if(!t||!num(hours))return "";const[H,M]=t.split(":").map(Number);const e=H*60+M+Math.round(num(hours)*60);return String(Math.floor(e/60)%24).padStart(2,"0")+":"+String(e%60).padStart(2,"0")};
+const slot=t=>t.time?fmtTime(t.time)+(num(t.hours)?"–"+fmtTime(endTime(t.time,t.hours)):""):"";
 const clean=o=>{const r={};for(const[k,v]of Object.entries(o)){if(k!=="id"&&v!==undefined)r[k]=v}return r};
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
 const startWeek=(()=>{const n=new Date(),w=iso(monday(n));return n.getDay()===0||n.getDay()===6?addDays(w,7):w})();
-const ui={tab:store.get("tab","week"),week:startWeek,month:store.get("month",null),who:store.get("who","all"),groupBy:store.get("groupBy","day"),me:store.get("me","")};
+const ui={tab:(t=>t==="month"?"sprint":t)(store.get("tab","week")),week:startWeek,month:store.get("month",null),who:store.get("who","all"),groupBy:store.get("groupBy","day"),me:store.get("me","")};
 ui.month=weekMonth(ui.week);
 
 function h(tag,attrs,...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs||{})){if(v==null||v===false)continue;if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else if(k==="class")e.className=v;else if(k==="style")e.style.cssText=v;else if(k==="value"||k==="checked"||k==="selected")e[k]=v;else e.setAttribute(k,v===true?"":v)}for(const c of kids.flat(9)){if(c==null||c===false)continue;e.append(c.nodeType?c:document.createTextNode(String(c)))}return e}
@@ -260,9 +283,13 @@ function intoMap(key){return snap=>{const m={};snap.docs.forEach(d=>m[d.id]={id:
     if(!Object.values(m).some(t=>t.week===ui.week)){for(let i=1;i<=3;i++){const w=addDays(ui.week,7*i);if(Object.values(m).some(t=>t.week===w)){ui.week=w;ui.month=weekMonth(w);toast("This week is empty, so the desk opened the week of "+fmtDay(w)+".");break}}}}
   render()}}
 function anchor(){return ui.tab==="month"||ui.tab==="year"?ui.month+"-01":ui.week}
+function sprintCfg(){const sp={name:"Q4 sprint",start:"2026-10-05",weeks:14,...(S.sprint||{})};sp.start=iso(monday(parse(sp.start)));sp.weeks=Math.max(1,Math.min(20,num(sp.weeks)||14));return sp}
 function syncTaskWindow(){
   if(!db)return;const a=iso(monday(parse(anchor())));
-  const from=addDays(a,-42),to=addDays(a,49),key=from+to;
+  let from=addDays(a,-42),to=addDays(a,49);
+  if(ui.tab==="sprint"){const sp=sprintCfg();from=sp.start;to=addDays(sp.start,7*sp.weeks)}
+  const key=from+to;
+  if(ui.tab==="sprint"&&key!==taskWin){taskWin="";ui._from=null}
   if(key===taskWin)return;
   if(taskWin&&ui._from&&a>=addDays(ui._from,14)&&a<=addDays(ui._to,-14))return;
   taskWin=key;ui._from=from;ui._to=to;if(taskUnsub)taskUnsub();
@@ -277,7 +304,9 @@ function startSubs(){
   subs.push(fs.collection("projects").onSnapshot(intoMap("projects"),onErr));
   subs.push(fs.collection("goals").onSnapshot(intoMap("goals"),onErr));
   subs.push(fs.collection("reviews").where("week",">=",addDays(ui.week,-120)).onSnapshot(intoMap("reviews"),onErr));
+  subs.push(fs.collection("daynotes").where("week",">=",addDays(ui.week,-120)).onSnapshot(intoMap("daynotes"),onErr));
   subs.push(fs.doc("meta/settings").onSnapshot(s=>{S.settings=s.exists?s.data():{};render()},onErr));
+  subs.push(fs.doc("meta/sprint").onSnapshot(s=>{S.sprint=s.exists?s.data():null;if(ui.tab==="sprint")syncTaskWindow();render()},onErr));
   syncTaskWindow();
 }
 async function signIn(){
@@ -325,13 +354,13 @@ function draw(){autoMe();
   const key=people().map(p=>p.id+p.name).join();if(key!==lastPeopleKey){lastPeopleKey=key;drawChrome()}
   const v=document.getElementById("view");
   const out=[];
-  if(setupNeeded){v.replaceChildren(h("div",{class:"sheet gate"},h("h3",{},"One setup step left"),h("p",{class:"muted"},"Paste your Firebase settings into index.html where it says PASTE YOUR FIREBASE CONFIG HERE, then upload the file again. The setup guide walks you through it.")));return}
+  if(setupNeeded){v.replaceChildren(h("div",{class:"sheet gate"},h("h3",{},"One setup step left"),h("p",{class:"muted"},"Your Firebase values haven't been added yet. Paste them into index.html where it says PASTE YOUR FIREBASE CONFIG HERE (or keep a config.js file next to it), then upload again.")));return}
   if(!authReady){v.replaceChildren(h("p",{class:"muted"},"Opening the desk…"));return}
   if(!authUser){v.replaceChildren(h("div",{class:"sheet gate"},h("h3",{},"Team Desk"),h("p",{class:"muted"},"Sign in once with your Google account. This device remembers you after that."),h("button",{class:"btn primary",onclick:signIn},"Sign in with Google")));return}
   if(denied){v.replaceChildren(h("div",{class:"sheet gate"},h("h3",{},"Not on the team list yet"),h("p",{class:"muted"},authUser.email+" isn't allowed to open this desk. Ask Preeti to add this email to the security rules, or sign in with a different account."),h("button",{class:"btn",onclick:()=>firebase.auth().signOut()},"Use a different account")));return}
   if(ready&&!Object.keys(S.people).length&&!Object.keys(S.projects).length){out.push(h("div",{class:"sheet gate"},h("h3",{},"The desk is empty"),h("p",{class:"muted"},"Load the October plan (team, engines, goals and four weeks of tasks). Do this once."),h("button",{class:"btn primary",onclick:importStarter},"Load the starter plan")));v.replaceChildren(...out);return}
   if(!ready){v.replaceChildren(h("p",{class:"muted"},"Opening the desk…"));return}
-  const fn={week:viewWeek,month:viewMonth,year:viewYear,team:viewTeam,review:viewReview}[ui.tab]||viewWeek;
+  const fn={week:viewWeek,sprint:viewSprint,month:viewMonth,year:viewYear,team:viewTeam,review:viewReview}[ui.tab]||viewWeek;
   out.push(...[].concat(fn()));
   v.replaceChildren(...out.filter(x=>x!=null&&x!==false));
 }
@@ -376,8 +405,9 @@ function taskRow(t,opts={}){
     h("div",{class:"t",tabindex:"0",role:"button",onclick:()=>editTask(t),onkeydown:e=>{if(e.key==="Enter")editTask(t)}},
       h("b",{},t.title),
       h("div",{class:"meta"},h("span",{},h("i",{class:"dot",style:`background:${p.color}`}),p.name),
-        opts.showOwner&&h("span",{},pName(t.owner)),t.hours?h("span",{},hrs(num(t.hours))):null,t.day&&opts.showDay!==false?h("span",{},t.day):null,
-        !opts.compact&&t.goal&&S.goals[t.goal]?h("span",{title:"Moves monthly goal"},"↳ "+S.goals[t.goal].title):null)),
+        t.time?h("span",{class:"slot"},"🕘 "+slot(t)):null,opts.showOwner&&h("span",{},pName(t.owner)),t.hours?h("span",{},hrs(num(t.hours))):null,t.day&&opts.showDay!==false?h("span",{},t.day):null,
+        !opts.compact&&t.sprintGoal&&S.goals[t.sprintGoal]?h("span",{title:"Moves 90-day priority"},"↳ "+S.goals[t.sprintGoal].title):(!opts.compact&&t.goal&&S.goals[t.goal]?h("span",{title:"Moves monthly goal"},"↳ "+S.goals[t.goal].title):null)),
+      (t.why||p.why)?h("div",{class:"why"+(opts.compact?" clamp":"")},h("span",{},"Why it matters: "),t.why||p.why):null),
     h("div",{class:"ctrls"},
       h("button",{class:"star","aria-pressed":String(!!t.focus),"aria-label":(t.focus?"Remove from":"Add to")+" Focus 3",title:"Focus 3",onclick:toggleFocus},t.focus?"★":"☆"),
       !opts.compact&&h("button",{class:"star del","aria-label":"Delete task: "+t.title,title:"Delete",onclick:()=>deleteTask(t)},"×"),
@@ -413,12 +443,17 @@ function viewWeek(){
   if(ui.groupBy==="day"){DAYS.slice(1).concat([""]).forEach(d=>groups.set(d,[]));rest.forEach(t=>(groups.get(t.day||"")||groups.get("")).push(t))}
   else{projects().forEach(pr=>groups.set(pr.id,[]));rest.forEach(t=>{if(!groups.has(t.project))groups.set(t.project,[]);groups.get(t.project).push(t)})}
   const budgets=p.budgets||{};
-  const sections=[...groups.entries()].filter(([,ts])=>ts.length).map(([k,ts])=>{
-    ts.sort((a,b)=>order[a.status]-order[b.status]);
-    const label=ui.groupBy==="day"?(k||"Any day"):proj(k).name;
+  const dayIdx=d=>DAYS.indexOf(d)-1;
+  const noteOf=d=>(S.daynotes||{})[ui.week+"_"+p.id+"_"+d];
+  const sections=[...groups.entries()].filter(([k,ts])=>ts.length||(ui.groupBy==="day"&&k&&(dayIdx(k)<5||noteOf(k)))).map(([k,ts])=>{
+    ts.sort((a,b)=>(a.time&&b.time?a.time.localeCompare(b.time):a.time?-1:b.time?1:0)||order[a.status]-order[b.status]);
+    const label=ui.groupBy==="day"?(k?k+" · "+fmtDay(addDays(ui.week,dayIdx(k))):"Any day"):proj(k).name;
     let note=hrs(planned(ts));
     if(ui.groupBy==="project"&&budgets[k])note+=" of "+hrs(num(budgets[k]))+" budget";
-    return h("div",{class:"group"},h("h4",{},label,h("span",{},note)),h("ul",{class:"ledger"},ts.map(t=>taskRow(t,{showDay:ui.groupBy!=="day"}))));
+    const nid=ui.week+"_"+p.id+"_"+k;const nv=noteOf(k);
+    const notes=ui.groupBy==="day"&&k?h("div",{class:"daynote"},h("label",{for:"n_"+nid},"📝 "+p.name+"’s notes for "+k),
+      h("textarea",{id:"n_"+nid,value:nv?nv.text||"":"",placeholder:"What happened, what's pending, anything to remember…",onchange:e=>save("daynotes",nid,{week:ui.week,person:p.id,day:k,text:e.target.value,updated:Date.now()})})):null;
+    return h("div",{class:"group"},h("h4",{},label,h("span",{},ts.length?note:"nothing planned")),ts.length?h("ul",{class:"ledger"},ts.map(t=>taskRow(t,{showDay:ui.groupBy!=="day"}))):null,notes);
   });
   const prevOpen=tasksFor(p.id,addDays(ui.week,-7)).filter(t=>["todo","doing","waiting","next"].includes(t.status)&&!t.repeat);
   const titles=new Set(list.map(t=>t.title));
@@ -443,11 +478,12 @@ function quickAdd(p){
   const mine=projects().filter(pr=>(p.budgets||{})[pr.id]!=null||pr.lead===p.id||pr.protected);
   const opts=(mine.length?mine:projects());
   const f=h("form",{class:"add","aria-label":"Add a task",onsubmit:async e=>{e.preventDefault();const fd=new FormData(f);const title=String(fd.get("title")||"").trim();if(!title)return;
-    const id=uid("t");if(await save("tasks",id,{title,owner:p.id,project:fd.get("project"),hours:num(fd.get("hours")),day:fd.get("day")||"",week:ui.week,status:"todo",focus:false,goal:"",notes:"",created:Date.now()}))f.reset()}},
+    const id=uid("t");if(await save("tasks",id,{title,owner:p.id,project:fd.get("project"),hours:parseDur(fd.get("hours")),time:fd.get("time")||"",day:fd.get("day")||"",week:ui.week,status:"todo",focus:false,goal:"",notes:"",created:Date.now()}))f.reset()}},
     h("input",{name:"title",placeholder:"Add a task with a clear outcome","aria-label":"Task"}),
     h("select",{name:"project","aria-label":"Project"},opts.map(pr=>h("option",{value:pr.id},pr.name))),
-    h("input",{name:"hours",type:"number",step:"0.25",min:"0",placeholder:"Hrs","aria-label":"Hours"}),
+    h("input",{name:"hours",placeholder:"Time, e.g. 10m",title:"How long: 10m, 45m, 1h, 1h 30m","aria-label":"How long (for example 10m or 1h 30m)"}),
     h("select",{name:"day","aria-label":"Day"},DAYS.map(d=>h("option",{value:d},d||"Any day"))),
+    h("input",{name:"time",type:"time","aria-label":"Start time (optional)",title:"Start time (optional)"}),
     h("button",{class:"btn primary",type:"submit"},"Add"));
   return f;
 }
@@ -472,6 +508,78 @@ async function rollForward(pid,fromWeek){
   for(const t of list)await save("tasks",t.id,{week:to,status:t.status==="waiting"?"waiting":"todo",carried:num(t.carried)+1},true);
   toast(list.length+" task"+(list.length===1?"":"s")+" moved to the week of "+fmtDay(to)+".");
 }
+
+// ---------- 90-DAY SPRINT ----------
+function viewSprint(){
+  const sp=sprintCfg();const end=addDays(sp.start,7*sp.weeks-1);
+  const weeks=Array.from({length:sp.weeks},(_,i)=>addDays(sp.start,7*i));
+  const today=iso(new Date());const thisW=iso(monday(new Date()));
+  const total=7*sp.weeks;const elapsed=Math.max(0,Math.min(total,Math.round((parse(today)-parse(sp.start))/864e5)+1));
+  const st=Object.values(S.tasks).filter(t=>t.sprint&&t.week>=sp.start&&t.week<=end&&t.status!=="dropped");
+  const done=st.filter(t=>t.status==="done").length;
+  const out=[h("div",{class:"bar"},h("div",{class:"period"},h("h2",{},sp.name),h("span",{class:"muted"},fmtDay(sp.start)+" – "+fmtDay(end))),
+    h("div",{class:"chips"},h("button",{class:"btn primary",onclick:()=>editGoal({level:"sprint",status:"on"})},"Add 90-day priority"),
+      h("button",{class:"btn",onclick:pickPlanFile},"Load a plan file"),h("button",{class:"btn ghost",onclick:editSprint},"Sprint settings")))];
+  out.push(h("section",{class:"sheet"},
+    h("div",{class:"sprint-meters"},
+      meter("Time gone",elapsed,total,`Day ${elapsed} of ${total}`),
+      meter("Sprint tasks done",done,st.length,`${done} of ${st.length}`))));
+  const pr=Object.values(S.goals).filter(g=>g.level==="sprint");
+  if(!pr.length&&!st.length){out.push(h("div",{class:"sheet empty"},h("p",{},"No 90-day plan loaded yet."),h("p",{class:"muted"},"Load the plan file, or add priorities by hand.")));return out}
+  for(const grp of GROUPS){
+    const list=pr.filter(g=>proj(g.project).group===grp).sort((a,b)=>(a.order??99)-(b.order??99));if(!list.length)continue;
+    out.push(h("section",{class:"sheet"},h("h3",{},grp+": 90-day priorities"),h("div",{class:"prio-grid"},list.map(g=>{
+      const linked=Object.values(S.tasks).filter(t=>t.sprint&&t.sprintGoal===g.id&&t.status!=="dropped");const ld=linked.filter(t=>t.status==="done").length;
+      const pct=num(g.target)>0?num(g.current)/num(g.target):(linked.length?ld/linked.length:0);
+      const stv=GOAL_ST.find(x=>x[0]===g.status)||GOAL_ST[0];
+      return h("div",{class:"prio",style:`border-top-color:${proj(g.project).color}`},
+        h("div",{class:"goal-top"},h("div",{class:"goal-title",tabindex:"0",role:"button",onclick:()=>editGoal(g),onkeydown:e=>{if(e.key==="Enter")editGoal(g)}},g.title),h("span",{class:"status "+stv[0]},stv[1])),
+        h("div",{class:"tiny"},pName(g.owner)+(g.unit&&num(g.target)?" · target "+num(g.target).toLocaleString("en-IN")+" "+g.unit:"")),
+        g.why?h("div",{class:"why"},h("span",{},"Why it matters: "),g.why):null,
+        h("div",{class:"pbar"},h("i",{style:`width:${Math.min(100,pct*100)}%`})),
+        h("div",{class:"tiny"},num(g.target)>0?h("span",{},h("input",{class:"cur",type:"number",value:num(g.current),step:"any","aria-label":"Current for "+g.title,onchange:e=>save("goals",g.id,{current:num(e.target.value)},true)})," of "+num(g.target).toLocaleString("en-IN")+" · "):null,`${ld} of ${linked.length} steps done`));
+    }))));
+  }
+  // week-by-week board
+  const ps=people();
+  const head=h("tr",{},h("th",{},""),...weeks.map((w,i)=>h("th",{class:w===thisW?"nowcol":""},h("button",{class:"wkbtn",onclick:()=>{ui.week=w;ui.tab="week";store.set("tab","week");drawChrome();syncTaskWindow();render()}},"W"+(i+1),h("small",{},fmtDay(w))))));
+  const rows=ps.map(p=>h("tr",{},h("th",{class:"rowh"},p.name),...weeks.map(w=>{
+    const ts=st.filter(t=>t.owner===p.id&&t.week===w);
+    const groups=new Map();ts.forEach(t=>{const k=t.milestone||t.id;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(t)});
+    const chips=[...groups.values()].sort((a,b)=>(b[0].milestone?1:0)-(a[0].milestone?1:0)).map(list=>{
+      const t=list[0];const d=list.filter(x=>x.status==="done").length;const all=d===list.length;const multi=list.length>1;
+      const open=()=>{if(multi){ui.who=p.id;store.set("who",p.id);ui.week=w;ui.tab="week";store.set("tab","week");drawChrome();syncTaskWindow();render()}else editTask(t)};
+      return h("button",{class:"mini"+(all?" ok":""),style:`border-left-color:${proj(t.project).color}`,title:(t.milestone||t.title)+(t.why?"\nWhy: "+t.why:""),onclick:open},(all?"✓ ":"")+(t.milestone||t.title),multi?h("small",{class:"daysdone"},` ${d}/${list.length} days done`):null)});
+    return h("td",{class:"cell"+(w===thisW?" nowcol":"")},chips)})));
+  out.push(h("section",{class:"sheet"},h("h3",{},"Week by week"),h("p",{class:"tiny"},"One row per person. Conscious India milestones show how many daily blocks are done; Baksa Tales steps sit underneath. ✓ means done. Tap anything to open it."),
+    h("div",{class:"scroll board"},h("table",{style:`width:${90+sp.weeks*165}px`},h("thead",{},head),h("tbody",{},rows)))));
+  return out;
+}
+function meter(label,v,t,txt){return h("div",{class:"meter"},h("div",{class:"tiny"},label),h("div",{class:"pbar big"},h("i",{style:`width:${t?Math.min(100,v/t*100):0}%`})),h("b",{},txt))}
+function editSprint(){const sp=sprintCfg();dialog("Sprint settings",[{key:"name",label:"Sprint name"},{key:"start",label:"Starts (week of)",type:"date",half:true},{key:"weeks",label:"Number of weeks",type:"number",min:"1",half:true}],sp,v=>{v.start=iso(monday(parse(v.start)));v.weeks=num(v.weeks)||14;const r=save("meta","sprint",clean({...S.sprint,...v}));taskWin="";setTimeout(syncTaskWindow,300);return r})}
+function pickPlanFile(){const inp=h("input",{type:"file",accept:".json,application/json",style:"display:none",onchange:async()=>{const f=inp.files[0];inp.remove();if(!f)return;try{await importPlan(JSON.parse(await f.text()))}catch(e){toast("That file couldn't be read: "+(e.message||e))}}});document.body.append(inp);inp.click()}
+async function importPlan(plan){
+  if(!fs){toast("Sign in first.");return}
+  const label=plan.label||"this plan";
+  if(!confirmInline(`Load ${label}? This adds the plan's tasks and goals and replaces the old starter work tasks that haven't been started.`))return;
+  const all=await fs.collection("tasks").get();const ops=[];
+  const R=plan.rules||{};
+  const seed=R.deleteSeeded?new RegExp(R.deleteSeeded.idPattern):null;
+  all.docs.forEach(d=>{const t=d.data();
+    if(seed&&seed.test(d.id)&&(R.deleteSeeded.projects||[]).includes(t.project)&&(R.deleteSeeded.statuses||["todo"]).includes(t.status))ops.push(["del","tasks",d.id]);
+    else if((R.deleteOwnerProject||[]).some(x=>x.owner===t.owner&&x.project===t.project))ops.push(["del","tasks",d.id]);
+    else if((R.unfocus||[]).some(x=>x.owner===t.owner&&x.project===t.project&&String(t.title||"").startsWith(x.titlePrefix)&&t.week>=(x.from||""))&&t.focus)ops.push(["upd","tasks",d.id,{focus:false}]);
+  });
+  if(R.deleteGoals){const gs=await fs.collection("goals").get();const re=new RegExp(R.deleteGoals.idPattern);gs.docs.forEach(d=>{const g=d.data();if(re.test(d.id)&&!num(g.current)&&g.status!=="done")ops.push(["del","goals",d.id])})}
+  for(const[col,docs]of Object.entries(plan.set||{}))for(const[id,d]of Object.entries(docs))ops.push(["set",col,id,d]);
+  for(const[col,docs]of Object.entries(plan.merge||{}))for(const[id,d]of Object.entries(docs))ops.push(["merge",col,id,d]);
+  for(const x of plan.replaceFields||[])ops.push(["upd",x.collection,x.id,x.data]);
+  try{for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(([k,c,id,d])=>{const ref=fs.collection(c).doc(id);
+      if(k==="del")b.delete(ref);else if(k==="set")b.set(ref,d);else if(k==="merge")b.set(ref,d,{merge:true});else b.update(ref,d)});await b.commit()}
+    taskWin="";syncTaskWindow();toast(`Done: ${label} loaded (${ops.length} changes).`)}
+  catch(e){toast("Loading failed: "+(e.message||e.code||e))}
+}
+function confirmInline(msg){return window.confirm?window.confirm(msg):true}
 
 // ---------- MONTH ----------
 function monthsOfYear(){const ys=settings().yearStart;return Array.from({length:12},(_,i)=>addMonths(ys,i))}
@@ -522,14 +630,14 @@ function viewYear(){
   for(const grp of GROUPS){
     const list=ys.filter(g=>proj(g.project).group===grp).sort((a,b)=>(proj(a.project).order??99)-(proj(b.project).order??99));if(!list.length)continue;
     out.push(h("section",{class:"sheet"},h("h3",{},grp),...list.map(g=>{
-      const kids=Object.values(S.goals).filter(k=>k.parent===g.id).sort((a,b)=>a.month.localeCompare(b.month));
+      const kids=Object.values(S.goals).filter(k=>k.parent===g.id&&k.level==="sprint");
       return h("div",{class:"goal"},
         h("div",{class:"goal-top"},h("div",{},h("div",{class:"goal-title",tabindex:"0",role:"button",onclick:()=>editGoal(g),onkeydown:e=>{if(e.key==="Enter")editGoal(g)}},g.title),
           h("div",{class:"tiny"},h("i",{class:"dot",style:`background:${proj(g.project).color}`}),proj(g.project).name+" · "+pName(g.owner))),
           h("span",{class:"status "+(g.status||"on")},(GOAL_ST.find(x=>x[0]===g.status)||GOAL_ST[0])[1])),
         progress(g),
-        h("div",{class:"mchips"},kids.map(k=>h("button",{class:"mchip",title:k.title,onclick:()=>{ui.month=k.month;store.set("month",k.month);ui.tab="month";store.set("tab","month");drawChrome();syncTaskWindow();render()}},(k.status==="done"?"✓ ":"")+fmtMon(k.month)+": "+k.title)),
-          h("button",{class:"mchip",onclick:()=>editGoal({level:"month",month:ui.month,project:g.project,owner:g.owner,parent:g.id,status:"on"})},"+ monthly step")));
+        h("div",{class:"mchips"},kids.map(k=>h("button",{class:"mchip",title:k.title,onclick:()=>{ui.tab="sprint";store.set("tab","sprint");drawChrome();syncTaskWindow();render()}},(k.status==="done"?"✓ ":"")+"90 days: "+k.title)),
+          h("button",{class:"mchip",onclick:()=>editGoal({level:"sprint",project:g.project,owner:g.owner,parent:g.id,status:"on"})},"+ 90-day priority")));
     })));
   }
   return out;
@@ -595,9 +703,9 @@ function dialog(title,fields,values,onSave,onDelete){
   const mk=f=>{
     const id="f_"+f.key;let el;
     if(f.type==="select")el=h("select",{id},f.options.map(([v,l])=>h("option",{value:v,selected:String(values[f.key]??"")===String(v)},l)));
-    else if(f.type==="textarea")el=h("textarea",{id,value:values[f.key]??""});
+    else if(f.type==="textarea")el=h("textarea",{id,value:values[f.key]??"",placeholder:f.placeholder});
     else if(f.type==="check"){el=h("input",{id,type:"checkbox",checked:!!values[f.key]});inputs[f.key]=el;return h("div",{class:"field check"},el,h("label",{for:id},f.label))}
-    else el=h("input",{id,type:f.type||"text",value:values[f.key]??"",step:f.step,min:f.min,required:f.required});
+    else el=h("input",{id,type:f.type||"text",value:values[f.key]??"",step:f.step,min:f.min,required:f.required,placeholder:f.placeholder});
     inputs[f.key]=el;return h("div",{class:"field"},h("label",{for:id},f.label),el)};
   const body=[];for(let i=0;i<fields.length;i++){const f=fields[i];if(f.half&&fields[i+1]?.half){body.push(h("div",{class:"row2"},mk(f),mk(fields[i+1])));i++}else body.push(mk(f))}
   const form=h("form",{method:"dialog",onsubmit:async e=>{e.preventDefault();const out={};for(const f of fields){const el=inputs[f.key];out[f.key]=f.type==="check"?el.checked:f.type==="number"?num(el.value):el.value.trim?el.value.trim():el.value}
@@ -616,27 +724,32 @@ function editTask(t){
     {key:"title",label:"Task / outcome",required:true},
     {key:"owner",label:"Owner",type:"select",options:personOpts(),half:true},{key:"project",label:"Project",type:"select",options:projOpts(),half:true},
     {key:"week",label:"Week (any date in it)",type:"date",half:true},{key:"day",label:"Day",type:"select",options:DAYS.map(d=>[d,d||"Any day"]),half:true},
-    {key:"hours",label:"Hours",type:"number",step:"0.25",min:"0",half:true},{key:"status",label:"Status",type:"select",options:STATUSES,half:true},
-    {key:"goal",label:"Moves which monthly goal?",type:"select",options:[["","None"],...goals.map(g=>[g.id,fmtMon(g.month)+": "+g.title])]},
+    {key:"hh",label:"Hours",type:"number",step:"1",min:"0",half:true},{key:"mm",label:"Minutes",type:"number",step:"5",min:"0",half:true},
+    {key:"time",label:"Start time (optional)",type:"time",half:true},{key:"status",label:"Status",type:"select",options:STATUSES,half:true},
+    {key:"why",label:"Why it matters",type:"textarea",placeholder:"What moves forward, or what breaks, if this isn't done?"},
+    {key:"doneWhen",label:"Done when",placeholder:"The evidence that shows it's finished"},
+    {key:"sprintGoal",label:"Moves which 90-day priority?",type:"select",options:[["","None"],...Object.values(S.goals).filter(g=>g.level==="sprint").map(g=>[g.id,g.title])]},
+    {key:"sprint",label:"Show on the 90-day sprint board",type:"check"},
     {key:"focus",label:"Part of Focus 3",type:"check"},{key:"repeat",label:"Weekly routine (offer it again every week)",type:"check"},
     {key:"notes",label:"Next action / notes",type:"textarea"}],
-    {...t},
-    v=>{v.week=iso(monday(parse(v.week||ui.week)));if(v.focus&&!t.focus){const n=tasksFor(v.owner,v.week).filter(x=>x.focus&&x.id!==t.id&&x.status!=="done").length;if(n>=3){toast("Focus 3 is full for that week.");v.focus=false}}
+    {...t,hh:Math.floor(Math.round(num(t.hours)*60)/60),mm:Math.round(num(t.hours)*60)%60},
+    v=>{v.hours=num(v.hh)+num(v.mm)/60;delete v.hh;delete v.mm;v.week=iso(monday(parse(v.week||ui.week)));if(v.focus&&!t.focus){const n=tasksFor(v.owner,v.week).filter(x=>x.focus&&x.id!==t.id&&x.status!=="done").length;if(n>=3){toast("Focus 3 is full for that week.");v.focus=false}}
       return save("tasks",t.id||uid("t"),clean({...t,...v,created:t.created||Date.now()}))},
     t.id&&(()=>deleteTask(t)));
 }
 function editGoal(g){
   const years=Object.values(S.goals).filter(x=>x.level==="year");
-  dialog(g.id?"Edit goal":(g.level==="year"?"New Year 1 goal":"New monthly goal"),[
+  dialog(g.id?"Edit goal":(g.level==="year"?"New Year 1 goal":g.level==="sprint"?"New 90-day priority":"New monthly goal"),[
     {key:"title",label:"Goal (an outcome you can check)",required:true},
-    {key:"level",label:"Level",type:"select",options:[["year","Year 1"],["month","Month"]],half:true},{key:"month",label:"Month (for monthly goals)",type:"month",half:true},
+    {key:"level",label:"Level",type:"select",options:[["year","Year 1"],["sprint","90-day priority"]],half:true},
     {key:"project",label:"Engine / project",type:"select",options:projOpts(),half:true},{key:"owner",label:"Owner",type:"select",options:personOpts(),half:true},
+    {key:"why",label:"Why it matters",type:"textarea"},
     {key:"parent",label:"Feeds which Year 1 goal?",type:"select",options:[["","None"],...years.map(y=>[y.id,y.title])]},
     {key:"target",label:"Target number (optional)",type:"number",step:"any",half:true},{key:"unit",label:"Unit",half:true},
     {key:"current",label:"Current",type:"number",step:"any",half:true},{key:"status",label:"Status",type:"select",options:GOAL_ST,half:true},
     {key:"notes",label:"Notes",type:"textarea"}],
     {...g,month:g.month||ui.month},
-    v=>{if(v.level==="year"){v.month="";v.parent=""}
+    v=>{if(v.level==="year"){v.month="";v.parent=""}if(v.level==="sprint")v.month="";
       if(v.level==="month"&&!g.id){const same=Object.values(S.goals).filter(x=>x.level==="month"&&x.month===v.month&&x.project===v.project).length;if(same>=2)toast("That engine already has two goals this month. Saved, but consider parking one.")}
       return save("goals",g.id||uid("g"),clean({...g,...v}))},
     g.id&&(()=>remove("goals",g.id)));
@@ -647,7 +760,8 @@ function editProject(pr){
     {key:"group",label:"Group",type:"select",options:GROUPS.map(g=>[g,g]),half:true},{key:"lead",label:"Lead (one person)",type:"select",options:personOpts(),half:true},
     {key:"color",label:"Colour",type:"color",half:true},{key:"order",label:"Sort order",type:"number",half:true},
     {key:"protected",label:"Protected time (not counted against work hours)",type:"check"},
-    {key:"functions",label:"What it covers",type:"textarea"}],
+    {key:"functions",label:"What it covers",type:"textarea"},
+    {key:"why",label:"Default “why it matters” for its tasks",type:"textarea"}],
     {...pr},v=>save("projects",pr.id||uid("p"),clean({...pr,...v})),
     pr.id&&(()=>remove("projects",pr.id)));
 }
